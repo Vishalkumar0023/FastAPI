@@ -1,8 +1,13 @@
 from fastapi import FastAPI
 from models import Products
 from fastapi import HTTPException
+from database import session,engine
+import database_models
+
 
 app=FastAPI()
+
+database_models.Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 def greet():
@@ -15,9 +20,22 @@ products=[
     Products(id=6, name="Table", description="A wooden table", price=199.99, quantity=20),
 ]
 
+def db_init():
+    db=session()
+    for product in products:
+        db.add(database_models.Products(**product.model_dump()))
+
+    db.commit()
+
+db_init()
+
+    
+
+
 @app.get("/products")
 def get_all_products():
-    return products
+    db=session()
+    db.query()
 
 @app.get("/product/{id}")
 def get_product_by_id(id: int):
